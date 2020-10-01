@@ -19,12 +19,16 @@
 
 package org.decsync.sparss.utils
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.ContentResolver
 import android.content.ContentValues
 import android.content.Context
+import android.graphics.BitmapFactory
+import android.os.Build
 import android.os.Environment
 import android.util.Log
-import androidx.appcompat.app.AlertDialog
+import androidx.core.app.NotificationCompat
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
@@ -43,7 +47,9 @@ import java.io.File
 
 val ownAppId = getAppId("spaRSS")
 val defaultDecsyncDir = "${Environment.getExternalStorageDirectory()}/DecSync"
-const val TAG = "DecsyncUtils"
+private const val TAG = "DecsyncUtils"
+private const val CHANNEL_ERROR = "channel_error"
+private const val ERROR_NOTIFICATION_ID = 1
 
 class Extra(val context: Context)
 
@@ -79,12 +85,28 @@ object DecsyncUtils {
                 mDecsync = getNewDecsync(context)
             } catch (e: Exception) {
                 Log.e(TAG, "", e)
-                AlertDialog.Builder(context)
-                        .setTitle(R.string.decsync_disabled)
-                        .setMessage(e.localizedMessage)
-                        .setPositiveButton("OK") { _, _ -> }
-                        .show()
                 PrefUtils.putBoolean(PrefUtils.DECSYNC_ENABLED, false)
+
+                if (Build.VERSION.SDK_INT >= 26 && Constants.NOTIF_MGR != null) {
+                    val channel = NotificationChannel(
+                            CHANNEL_ERROR,
+                            context.getString(R.string.channel_error_name),
+                            NotificationManager.IMPORTANCE_DEFAULT
+                    )
+                    Constants.NOTIF_MGR.createNotificationChannel(channel)
+                }
+                val notification = NotificationCompat.Builder(context, CHANNEL_ERROR)
+                        .setSmallIcon(R.drawable.ic_statusbar_rss)
+                        .setLargeIcon(
+                                BitmapFactory.decodeResource(
+                                        context.resources,
+                                        R.mipmap.ic_launcher
+                                )
+                        )
+                        .setContentTitle(context.getString(R.string.decsync_disabled))
+                        .setContentText(e.localizedMessage)
+                        .build()
+                Constants.NOTIF_MGR?.notify(ERROR_NOTIFICATION_ID, notification)
             }
         }
         return mDecsync
@@ -135,10 +157,10 @@ object DecsyncUtils {
                 return
             }
             val groupId = getGroupId(feedId, cr)
+            DB.delete(context, FeedData.FeedColumns.CONTENT_URI(feedId), null, null, false)
             if (groupId != null) {
                 removeGroupIfEmpty(groupId, context)
             }
-            DB.delete(context, FeedData.FeedColumns.CONTENT_URI(feedId), null, null, false)
         }
     }
 

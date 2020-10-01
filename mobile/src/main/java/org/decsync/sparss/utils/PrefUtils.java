@@ -88,7 +88,6 @@ public class PrefUtils {
     public static final String DECSYNC_ENABLED = "decsync.enabled";
     public static final String DECSYNC_USE_SAF = "decsync.use_saf";
     public static final String DECSYNC_FILE = "decsync.directory";
-    public static final String DECSYNC_FILE_RESET = "decsync.directory_reset";
 
     public static boolean getBoolean(String key, boolean defValue) {
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(MainApplication.getContext());

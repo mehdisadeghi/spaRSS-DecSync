@@ -197,13 +197,6 @@ public class HomeActivity extends BaseActivity implements LoaderManager.LoaderCa
 
         getLoaderManager().initLoader(LOADER_ID, null, this);
 
-        if (PrefUtils.getBoolean(PrefUtils.DECSYNC_ENABLED, false) && !mFirstOpen) {
-            Decsync<Extra> decsync = DecsyncUtils.INSTANCE.getDecsync(this);
-            if (decsync != null) {
-                Extra extra = new Extra(this);
-                decsync.executeAllNewEntries(extra, true);
-            }
-        }
         if (PrefUtils.getBoolean(PrefUtils.REFRESH_ON_OPEN_ENABLED, false)) {
             if (!PrefUtils.getBoolean(PrefUtils.IS_REFRESHING, false)) {
                 Data inputData = new Data.Builder()
@@ -213,6 +206,12 @@ public class HomeActivity extends BaseActivity implements LoaderManager.LoaderCa
                         .setInputData(inputData)
                         .build();
                 WorkManager.getInstance(this).enqueue(workRequest);
+            }
+        } else if (PrefUtils.getBoolean(PrefUtils.DECSYNC_ENABLED, false) && !mFirstOpen) {
+            Decsync<Extra> decsync = DecsyncUtils.INSTANCE.getDecsync(this);
+            if (decsync != null) {
+                Extra extra = new Extra(this);
+                decsync.executeAllNewEntries(extra, true);
             }
         }
     }

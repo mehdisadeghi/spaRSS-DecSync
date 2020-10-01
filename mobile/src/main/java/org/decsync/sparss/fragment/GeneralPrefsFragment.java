@@ -146,10 +146,6 @@ public class GeneralPrefsFragment extends PreferenceFragmentCompat {
             preference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    Activity activity = getActivity();
-                    if (activity == null) {
-                        return false;
-                    }
                     if (Boolean.TRUE.equals(newValue)) {
                         DecsyncPrefUtils.INSTANCE.chooseDecsyncDir(GeneralPrefsFragment.this);
                         return false;
@@ -157,73 +153,39 @@ public class GeneralPrefsFragment extends PreferenceFragmentCompat {
                     return true;
                 }
             });
-
-            preference = findPreference(PrefUtils.DECSYNC_FILE);
-            preference.setVisible(false);
-
-            preference = findPreference(PrefUtils.DECSYNC_FILE_RESET);
-            preference.setVisible(false);
         } else {
             preference = findPreference(PrefUtils.DECSYNC_ENABLED);
+            if (PrefUtils.getBoolean(PrefUtils.DECSYNC_ENABLED, false)) {
+                preference.setSummary(PrefUtils.getString(PrefUtils.DECSYNC_FILE, getDefaultDecsyncDir()));
+            } else {
+                preference.setSummary(getString(R.string.settings_decsync_enabled_description));
+            }
             preference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    Activity activity = getActivity();
-                    if (activity == null) {
-                        return false;
-                    }
                     if (Boolean.TRUE.equals(newValue)) {
-                        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                            DecsyncUtils.INSTANCE.initSync(activity);
-                            return true;
+                        if (ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                            chooseDecsyncFile();
                         } else {
                             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSIONS_REQUEST_DECSYNC);
-                            return false;
                         }
+                        return false;
+                    } else {
+                        preference.setSummary(getString(R.string.settings_decsync_enabled_description));
+                        return true;
                     }
-                    return true;
-                }
-            });
-
-            preference = findPreference(PrefUtils.DECSYNC_FILE);
-            preference.setSummary(PrefUtils.getString(PrefUtils.DECSYNC_FILE, getDefaultDecsyncDir()));
-            preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    Intent intent = new Intent(requireActivity(), FilePickerActivity.class);
-                    intent.putExtra(FilePickerActivity.EXTRA_ALLOW_CREATE_DIR, true);
-                    intent.putExtra(FilePickerActivity.EXTRA_MODE, FilePickerActivity.MODE_DIR);
-                    intent.putExtra(FilePickerActivity.EXTRA_START_PATH, PrefUtils.getString(PrefUtils.DECSYNC_FILE, getDefaultDecsyncDir()));
-                    startActivityForResult(intent, CHOOSE_DECSYNC_FILE);
-                    return true;
-                }
-            });
-
-            preference = findPreference(PrefUtils.DECSYNC_FILE_RESET);
-            preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    new AlertDialog.Builder(getActivity())
-                            .setTitle(R.string.settings_decsync_file_reset)
-                            .setMessage(getString(R.string.settings_decsync_file_reset_message, getDefaultDecsyncDir()))
-                            .setNegativeButton(android.R.string.no, null)
-                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int id) {
-                                    setDecsyncFile(getDefaultDecsyncDir());
-                                }
-                            })
-                            .show();
-                    return true;
                 }
             });
         }
     }
 
-    private void setDecsyncFile(String dir) {
-        PrefUtils.putString(PrefUtils.DECSYNC_FILE, dir);
-        findPreference(PrefUtils.DECSYNC_FILE).setSummary(dir);
-        DecsyncUtils.INSTANCE.initSync(requireActivity());
+    private void chooseDecsyncFile() {
+        Intent intent = new Intent(requireActivity(), FilePickerActivity.class);
+        intent.putExtra(FilePickerActivity.EXTRA_ALLOW_CREATE_DIR, true);
+        intent.putExtra(FilePickerActivity.EXTRA_MODE, FilePickerActivity.MODE_DIR);
+        // Always start on the default DecSync dir, as the previously selected one may be inaccessible
+        intent.putExtra(FilePickerActivity.EXTRA_START_PATH, getDefaultDecsyncDir());
+        startActivityForResult(intent, CHOOSE_DECSYNC_FILE);
     }
 
     @Override
@@ -231,8 +193,7 @@ public class GeneralPrefsFragment extends PreferenceFragmentCompat {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (PrefUtils.getBoolean(PrefUtils.DECSYNC_USE_SAF, false)) {
-            Activity activity = requireActivity();
-            DecsyncPrefUtils.INSTANCE.chooseDecsyncDirResult(activity, requestCode, resultCode, data, new Function1<Uri, Unit>() {
+            DecsyncPrefUtils.INSTANCE.chooseDecsyncDirResult(requireActivity(), requestCode, resultCode, data, new Function1<Uri, Unit>() {
                 @Override
                 public Unit invoke(Uri uri) {
                     PrefUtils.putBoolean(PrefUtils.DECSYNC_ENABLED, true);
@@ -240,7 +201,7 @@ public class GeneralPrefsFragment extends PreferenceFragmentCompat {
                     if (preference != null) {
                         preference.setChecked(true);
                     }
-                    DecsyncUtils.INSTANCE.initSync(activity);
+                    DecsyncUtils.INSTANCE.initSync(requireActivity());
                     return Unit.INSTANCE;
                 }
             });
@@ -248,11 +209,15 @@ public class GeneralPrefsFragment extends PreferenceFragmentCompat {
             if (requestCode == CHOOSE_DECSYNC_FILE) {
                 Uri uri = data == null ? null : data.getData();
                 if (resultCode == Activity.RESULT_OK && uri != null) {
-                    String oldDir = PrefUtils.getString(PrefUtils.DECSYNC_FILE, getDefaultDecsyncDir());
-                    String newDir = Utils.getFileForUri(uri).getPath();
-                    if (!oldDir.equals(newDir)) {
-                        setDecsyncFile(newDir);
+                    PrefUtils.putBoolean(PrefUtils.DECSYNC_ENABLED, true);
+                    String dir = Utils.getFileForUri(uri).getPath();
+                    PrefUtils.putString(PrefUtils.DECSYNC_FILE, dir);
+                    CheckBoxPreference preference = findPreference(PrefUtils.DECSYNC_ENABLED);
+                    if (preference != null) {
+                        preference.setChecked(true);
+                        preference.setSummary(dir);
                     }
+                    DecsyncUtils.INSTANCE.initSync(requireActivity());
                 }
             }
         }
@@ -265,9 +230,7 @@ public class GeneralPrefsFragment extends PreferenceFragmentCompat {
         {
             case PERMISSIONS_REQUEST_DECSYNC:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    DecsyncUtils.INSTANCE.initSync(requireActivity());
-                    CheckBoxPreference preference = findPreference(PrefUtils.DECSYNC_ENABLED);
-                    preference.setChecked(true);
+                    chooseDecsyncFile();
                 }
         }
     }
