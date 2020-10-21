@@ -53,6 +53,15 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".activity.ProxyActivity"
+            android:label="@string/settings_screen_proxy"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="proxy_activity_intent"/>
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
 
         <activity
             android:name=".activity.EditFeedsListActivity"
