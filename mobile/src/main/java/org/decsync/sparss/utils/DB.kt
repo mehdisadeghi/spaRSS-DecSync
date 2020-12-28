@@ -212,7 +212,7 @@ object DB {
             if (categoryOld != null) return JsonPrimitive(categoryOld)
             val name = cursor.getString(1)
 
-            val categoryNew = "catID%05d".format(Random().nextInt(100000))
+            val categoryNew = UUID.randomUUID().toString()
             val categoryNewJson = JsonPrimitive(categoryNew)
             val values = ContentValues()
             values.put(FeedData.FeedColumns.URL, categoryNew)
