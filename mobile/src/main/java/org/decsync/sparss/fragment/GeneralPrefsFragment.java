@@ -50,6 +50,7 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -185,7 +186,11 @@ public class GeneralPrefsFragment extends PreferenceFragmentCompat {
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 NativeFile decsyncDir = DecsyncUtils.INSTANCE.getDecsyncDir(requireActivity());
-                DecsyncPrefUtils.Params params = new DecsyncPrefUtils.Params(); // TODO: fix params
+                DecsyncPrefUtils.Params params = new DecsyncPrefUtils.Params(
+                        getOwnAppId(),
+                        // Default values
+                        Color.GRAY, Color.rgb(0xD5, 0x00, 0x00), Color.rgb(0xFF, 0x98, 0x00), Color.rgb(0x4C, 0xAF, 0x50)
+                );
                 DecsyncPrefUtils.INSTANCE.manageDecsyncData(requireActivity(), decsyncDir, "rss", null, params);
                 return true;
             }

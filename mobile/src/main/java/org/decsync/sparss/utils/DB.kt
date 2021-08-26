@@ -25,9 +25,8 @@ import android.content.Context
 import android.database.Cursor
 import android.net.Uri
 import kotlinx.serialization.json.JsonPrimitive
-import org.decsync.library.Decsync
 import org.decsync.library.DecsyncItem
-import org.decsync.library.properties.Rss
+import org.decsync.library.items.Rss
 import org.decsync.sparss.provider.FeedData
 import org.decsync.sparss.utils.DecsyncUtils.getDecsync
 import org.decsync.sparss.utils.DecsyncUtils.getMyDecsyncObserver
