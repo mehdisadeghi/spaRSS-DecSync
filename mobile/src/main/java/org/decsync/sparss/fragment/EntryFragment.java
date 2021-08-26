@@ -328,7 +328,7 @@ public class EntryFragment extends SwipeRefreshFragment implements BaseActivity.
 
                             // since we have acquired the networkInfo, we use it for basic checks
                             if (networkInfo != null && networkInfo.getState() == NetworkInfo.State.CONNECTED) {
-                                FetcherWorker.Companion.addEntriesToMobilize(new long[]{mEntriesIds[mCurrentPagerPos]});
+                                FetcherWorker.Companion.addEntriesToMobilize(Long.toString(mEntriesIds[mCurrentPagerPos]));
 
                                 Data inputData = new Data.Builder()
                                         .putString(FetcherWorker.ACTION, FetcherWorker.ACTION_MOBILIZE_FEEDS)

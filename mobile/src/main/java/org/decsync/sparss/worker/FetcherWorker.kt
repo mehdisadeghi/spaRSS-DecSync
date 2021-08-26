@@ -717,7 +717,7 @@ class FetcherWorker(val context: Context, params: WorkerParameters) : Worker(con
             }
         }
 
-        fun addEntriesToMobilize(entriesId: LongArray) {
+        fun addEntriesToMobilize(entriesId: List<String>) {
             val values = entriesId.map { entryId ->
                 ContentValues().apply {
                     put(TaskColumns.ENTRY_ID, entryId)
@@ -725,5 +725,7 @@ class FetcherWorker(val context: Context, params: WorkerParameters) : Worker(con
             }.toTypedArray()
             MainApplication.getContext().contentResolver.bulkInsert(TaskColumns.CONTENT_URI, values)
         }
+
+        fun addEntriesToMobilize(entryId: String) = addEntriesToMobilize(listOf(entryId))
     }
 }

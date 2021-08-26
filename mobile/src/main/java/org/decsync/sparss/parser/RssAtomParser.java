@@ -148,7 +148,7 @@ public class RssAtomParser extends DefaultHandler {
     private final String mFeedBaseUrl;
     private final Date mKeepDateBorder;
     private final FeedFilters mFilters;
-    private final ArrayList<ContentProviderOperation> mInserts = new ArrayList<>();
+    private final ArrayList<ContentValues> mInserts = new ArrayList<>();
     private final ArrayList<ArrayList<String>> mInsertedEntriesImages = new ArrayList<>();
     private long mNewRealLastUpdate;
     private boolean mEntryTagEntered = false;
@@ -477,7 +477,7 @@ public class RssAtomParser extends DefaultHandler {
 
                         // We cannot update, we need to insert it
                         mInsertedEntriesImages.add(imagesUrls);
-                        mInserts.add(ContentProviderOperation.newInsert(mFeedEntriesUri).withValues(values).build());
+                        mInserts.add(values);
 
                         mNewCount++;
                     }
@@ -637,23 +637,21 @@ public class RssAtomParser extends DefaultHandler {
 
         try {
             if (!mInserts.isEmpty()) {
-                ContentProviderResult[] results = cr.applyBatch(FeedData.AUTHORITY, mInserts);
-
+                ArrayList<String> entriesId = new ArrayList<>();
+                for (int i = 0; i < mInserts.size(); ++i) {
+                    ContentValues values = mInserts.get(i);
+                    Uri uri = DB.insert(context, mFeedEntriesUri, values);
+                    entriesId.add(uri.getLastPathSegment());
+                }
                 if (mFetchImages) {
-                    for (int i = 0; i < results.length; ++i) {
+                    for (int i = 0; i < mInserts.size(); ++i) {
                         ArrayList<String> images = mInsertedEntriesImages.get(i);
                         if (images != null) {
-                            FetcherWorker.Companion.addImagesToDownload(results[i].uri.getLastPathSegment(), images);
+                            FetcherWorker.Companion.addImagesToDownload(entriesId.get(i), images);
                         }
                     }
                 }
-
                 if (mRetrieveFullText) {
-                    long[] entriesId = new long[results.length];
-                    for (int i = 0; i < results.length; i++) {
-                        entriesId[i] = Long.valueOf(results[i].uri.getLastPathSegment());
-                    }
-
                     FetcherWorker.Companion.addEntriesToMobilize(entriesId);
                 }
             }
