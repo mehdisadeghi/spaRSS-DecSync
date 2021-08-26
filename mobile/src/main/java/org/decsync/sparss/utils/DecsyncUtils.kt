@@ -35,6 +35,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkRequest
 import kotlinx.serialization.json.*
 import org.decsync.library.Decsync
+import org.decsync.library.DecsyncObserver
 import org.decsync.library.DecsyncPrefUtils
 import org.decsync.library.getAppId
 import org.decsync.sparss.Constants
@@ -54,8 +55,26 @@ private const val ERROR_NOTIFICATION_ID = 1
 class Extra(val context: Context)
 
 @ExperimentalStdlibApi
+class MyDecsyncObserver(
+        val context: Context
+) : DecsyncObserver() {
+    override fun isDecsyncEnabled(): Boolean {
+        return PrefUtils.getBoolean(PrefUtils.DECSYNC_ENABLED, false)
+    }
+
+    override fun setEntries(entries: List<Decsync.EntryWithPath>) {
+        DecsyncUtils.getDecsync(context)?.setEntries(entries)
+    }
+
+    override fun executeStoredEntries(storedEntries: List<Decsync.StoredEntry>) {
+        DecsyncUtils.getDecsync(context)?.executeStoredEntries(storedEntries, Extra(context))
+    }
+}
+
+@ExperimentalStdlibApi
 object DecsyncUtils {
     private var mDecsync: Decsync<Extra>? = null
+    private var mDecsyncObserver: MyDecsyncObserver? = null
 
     private fun getNewDecsync(context: Context): Decsync<Extra> {
         val decsync = if (PrefUtils.getBoolean(PrefUtils.DECSYNC_USE_SAF, false)) {
@@ -110,6 +129,14 @@ object DecsyncUtils {
             }
         }
         return mDecsync
+    }
+
+    fun getMyDecsyncObserver(context: Context): MyDecsyncObserver {
+        return DecsyncUtils.mDecsyncObserver ?: run {
+            MyDecsyncObserver(context).also {
+                mDecsyncObserver = it
+            }
+        }
     }
 
     fun initSync(context: Context) {
@@ -278,11 +305,5 @@ object DecsyncUtils {
                 DB.delete(context, FeedData.FeedColumns.GROUPS_CONTENT_URI(groupId), null, null, false)
             }
         }
-    }
-
-    fun executePostSubscribeActions(feedUrl: String, context: Context) {
-        val extra = Extra(context)
-        getDecsync(context)?.executeStoredEntry(listOf("feeds", "names"), JsonPrimitive(feedUrl), extra)
-        getDecsync(context)?.executeStoredEntry(listOf("feeds", "categories"), JsonPrimitive(feedUrl), extra)
     }
 }

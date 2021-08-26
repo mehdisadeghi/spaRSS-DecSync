@@ -56,7 +56,6 @@ import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
 
-import org.decsync.library.Decsync;
 import org.decsync.sparss.Constants;
 import org.decsync.sparss.MainApplication;
 import org.decsync.sparss.R;
@@ -65,8 +64,6 @@ import org.decsync.sparss.provider.FeedData.EntryColumns;
 import org.decsync.sparss.provider.FeedData.FeedColumns;
 import org.decsync.sparss.provider.FeedData.FilterColumns;
 import org.decsync.sparss.utils.DB;
-import org.decsync.sparss.utils.DecsyncUtils;
-import org.decsync.sparss.utils.Extra;
 import org.decsync.sparss.utils.HtmlUtils;
 import org.decsync.sparss.utils.NetworkUtils;
 
@@ -80,16 +77,10 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
-import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import kotlinx.serialization.json.JsonElement;
-import kotlinx.serialization.json.JsonElementKt;
 
 public class RssAtomParser extends DefaultHandler {
     private static final String TAG = RssAtomParser.class.getSimpleName();
@@ -159,7 +150,6 @@ public class RssAtomParser extends DefaultHandler {
     private final FeedFilters mFilters;
     private final ArrayList<ContentProviderOperation> mInserts = new ArrayList<>();
     private final ArrayList<ArrayList<String>> mInsertedEntriesImages = new ArrayList<>();
-    private final ArrayList<Decsync.StoredEntry> mStoredEntries = new ArrayList<>();
     private long mNewRealLastUpdate;
     private boolean mEntryTagEntered = false;
     private boolean mTitleTagEntered = false;
@@ -488,14 +478,6 @@ public class RssAtomParser extends DefaultHandler {
                         // We cannot update, we need to insert it
                         mInsertedEntriesImages.add(imagesUrls);
                         mInserts.add(ContentProviderOperation.newInsert(mFeedEntriesUri).withValues(values).build());
-                        Calendar date = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-                        date.setTime(mEntryDate != null ? mEntryDate : new Date(mNow));
-                        String year = String.format("%04d", date.get(Calendar.YEAR));
-                        String month = String.format("%02d", date.get(Calendar.MONTH) + 1);
-                        String day = String.format("%02d", date.get(Calendar.DAY_OF_MONTH));
-                        JsonElement guid = JsonElementKt.JsonPrimitive(guidString);
-                        mStoredEntries.add(new Decsync.StoredEntry(Arrays.asList("articles", "read", year, month, day), guid));
-                        mStoredEntries.add(new Decsync.StoredEntry(Arrays.asList("articles", "marked", year, month, day), guid));
 
                         mNewCount++;
                     }
@@ -656,11 +638,6 @@ public class RssAtomParser extends DefaultHandler {
         try {
             if (!mInserts.isEmpty()) {
                 ContentProviderResult[] results = cr.applyBatch(FeedData.AUTHORITY, mInserts);
-                Extra extra = new Extra(context);
-                Decsync<Extra> decsync = DecsyncUtils.INSTANCE.getDecsync(context);
-                if (decsync != null) {
-                    decsync.executeStoredEntries(mStoredEntries, extra);
-                }
 
                 if (mFetchImages) {
                     for (int i = 0; i < results.length; ++i) {
