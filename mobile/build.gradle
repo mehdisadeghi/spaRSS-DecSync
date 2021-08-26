@@ -5,7 +5,6 @@ apply plugin: 'com.droidtitan.lintcleaner'
 
 android {
     compileSdkVersion 29
-    buildToolsVersion '28.0.3'
     flavorDimensions 'default'
 
     packagingOptions {
@@ -62,32 +61,32 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.0'
-    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'androidx.appcompat:appcompat:1.3.1'
     implementation 'androidx.preference:preference-ktx:1.1.1'
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
-    implementation 'androidx.work:work-runtime:2.4.0'
-    implementation 'com.google.android.material:material:1.2.1'
+    implementation 'androidx.work:work-runtime:2.5.0'
+    implementation 'com.google.android.material:material:1.4.0'
     implementation 'org.jsoup:jsoup:1.13.1'
     implementation 'com.squareup.picasso:picasso:2.5.2'
     implementation 'com.amulyakhare:com.amulyakhare.textdrawable:1.0.1'
-    implementation 'com.nononsenseapps:filepicker:4.1.0'
-    implementation 'org.decsync:libdecsync-android:1.8.3'
+    implementation 'com.nononsenseapps:filepicker:4.2.1'
+    implementation 'org.decsync:libdecsync-android:2.0.0'
     implementation 'com.github.AppIntro:AppIntro:6.0.0'
 
     //for unit tests. see src/test
     // Required -- JUnit 4 framework
-    testImplementation 'junit:junit:4.13.1'
+    testImplementation 'junit:junit:4.13.2'
     // Optional -- Mockito framework
     testImplementation 'org.mockito:mockito-core:3.5.13'
     testImplementation 'org.hamcrest:hamcrest-library:1.3'
 
     //for Android Instrumented Tests. see src/androidTest
-    androidTestImplementation 'androidx.annotation:annotation:1.1.0'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-    androidTestImplementation 'androidx.test:rules:1.3.0'
+    androidTestImplementation 'androidx.annotation:annotation:1.2.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test:rules:1.4.0'
     // Optional -- Hamcrest library
     androidTestImplementation 'org.hamcrest:hamcrest-library:1.3'
     //compile 'org.hamcrest:hamcrest-library:1.3'
     // Optional -- UI testing with Espresso
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 }
