@@ -65,6 +65,7 @@ import com.nononsenseapps.filepicker.FilePickerActivity;
 import com.nononsenseapps.filepicker.Utils;
 
 import org.decsync.library.DecsyncPrefUtils;
+import org.decsync.library.NativeFile;
 import org.decsync.sparss.MainApplication;
 import org.decsync.sparss.R;
 import org.decsync.sparss.utils.DecsyncUtils;
@@ -74,6 +75,7 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 
 import static org.decsync.sparss.utils.DecsyncUtilsKt.getDefaultDecsyncDir;
+import static org.decsync.sparss.utils.DecsyncUtilsKt.getOwnAppId;
 
 public class GeneralPrefsFragment extends PreferenceFragmentCompat {
 
@@ -177,6 +179,17 @@ public class GeneralPrefsFragment extends PreferenceFragmentCompat {
                 }
             });
         }
+
+        preference = findPreference(PrefUtils.DECSYNC_MANAGE_DATA);
+            preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                NativeFile decsyncDir = DecsyncUtils.INSTANCE.getDecsyncDir(requireActivity());
+                DecsyncPrefUtils.Params params = new DecsyncPrefUtils.Params(); // TODO: fix params
+                DecsyncPrefUtils.INSTANCE.manageDecsyncData(requireActivity(), decsyncDir, "rss", null, params);
+                return true;
+            }
+        });
     }
 
     private void chooseDecsyncFile() {

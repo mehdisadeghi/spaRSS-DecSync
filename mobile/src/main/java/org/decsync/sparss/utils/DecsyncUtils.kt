@@ -33,11 +33,11 @@ import androidx.work.Data
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
-import kotlinx.serialization.json.*
-import org.decsync.library.Decsync
-import org.decsync.library.DecsyncObserver
-import org.decsync.library.DecsyncPrefUtils
-import org.decsync.library.getAppId
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.boolean
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonPrimitive
+import org.decsync.library.*
 import org.decsync.sparss.Constants
 import org.decsync.sparss.R
 import org.decsync.sparss.provider.FeedData
@@ -77,13 +77,8 @@ object DecsyncUtils {
     private var mDecsyncObserver: MyDecsyncObserver? = null
 
     private fun getNewDecsync(context: Context): Decsync<Extra> {
-        val decsync = if (PrefUtils.getBoolean(PrefUtils.DECSYNC_USE_SAF, false)) {
-            val decsyncDir = DecsyncPrefUtils.getDecsyncDir(context) ?: throw Exception(context.getString(R.string.settings_decsync_dir_not_configured))
-            Decsync<Extra>(context, decsyncDir, "rss", null, ownAppId)
-        } else {
-            val decsyncDir = File(PrefUtils.getString(PrefUtils.DECSYNC_FILE, defaultDecsyncDir))
-            Decsync<Extra>(decsyncDir, "rss", null, ownAppId)
-        }
+        val decsyncDir = getDecsyncDir(context)
+        val decsync = Decsync<Extra>(decsyncDir, "rss", null, ownAppId)
         decsync.addListener(listOf("articles", "read")) { path, entry, extra ->
             readMarkListener(true, path, entry, extra)
         }
@@ -96,6 +91,16 @@ object DecsyncUtils {
         decsync.addListener(listOf("categories", "names"), ::categoryNamesListener)
         decsync.addListener(listOf("categories", "parents"), ::categoryParentsListener)
         return decsync
+    }
+
+    fun getDecsyncDir(context: Context): NativeFile {
+        return if (PrefUtils.getBoolean(PrefUtils.DECSYNC_USE_SAF, false)) {
+            val uri = DecsyncPrefUtils.getDecsyncDir(context) ?: throw Exception(context.getString(R.string.settings_decsync_dir_not_configured))
+            checkUriPermissions(context, uri)
+            nativeFileFromDirUri(context, uri)
+        } else {
+            nativeFileFromFile(File(PrefUtils.getString(PrefUtils.DECSYNC_FILE, defaultDecsyncDir)))
+        }
     }
 
     fun getDecsync(context: Context): Decsync<Extra>? {
