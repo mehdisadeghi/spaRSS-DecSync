@@ -1,0 +1,4 @@
+- Add support for DecSync v2
+- Add DecSync data management
+- Simplify DecSync settings
+- Fix proxy settings screen (#13)
