@@ -16,8 +16,8 @@ android {
         applicationId "org.decsync.sparss"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 98
-        versionName "1.16.1"
+        versionCode 99
+        versionName "1.17.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
