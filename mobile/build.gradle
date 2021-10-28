@@ -70,7 +70,7 @@ dependencies {
     implementation 'com.squareup.picasso:picasso:2.5.2'
     implementation 'com.amulyakhare:com.amulyakhare.textdrawable:1.0.1'
     implementation 'com.nononsenseapps:filepicker:4.2.1'
-    implementation 'org.decsync:libdecsync:2.1.2'
+    implementation 'org.decsync:libdecsync:2.2.0'
     implementation 'com.github.AppIntro:AppIntro:6.1.0'
 
     //for unit tests. see src/test
