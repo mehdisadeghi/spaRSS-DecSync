@@ -104,12 +104,12 @@ public class EntryView extends WebView {
             + ".button-section p.marginfix {margin: 0.5cm 0 0.5cm 0}"
             + ".button-section input, .button-section a {font-family: sans-serif-light; font-size: 100%; color: #FFFFFF; background-color: " + BUTTON_COLOR + "; text-decoration: none; border: none; border-radius:0.2cm; padding: 0.3cm} "
             + "</style><meta name='viewport' content='width=device-width'/></head>";
-    private static final String BODY_START = "<body>";
+    private static final String BODY_START = "<body dir='auto'>";
     private static final String BODY_END = "</body>";
     private static final String TITLE_START = "<h1><a href='";
     private static final String TITLE_MIDDLE = "'>";
     private static final String TITLE_END = "</a></h1>";
-    private static final String SUBTITLE_START = "<p class='subtitle'>";
+    private static final String SUBTITLE_START = "<p class='subtitle' dir='ltr'>";
     private static final String SUBTITLE_END = "</p>";
     private static final String BUTTON_SECTION_START = "<div class='button-section'>";
     private static final String BUTTON_SECTION_END = "</div>";
